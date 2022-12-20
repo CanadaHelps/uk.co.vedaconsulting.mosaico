@@ -67,7 +67,9 @@
           },
           actions: {
             sync: function(ko, viewModel) {
+              viewModel.metadata.changed = Date.now();
               syncModel(viewModel);
+              $timeout(function(){$scope.save();}, 100);
             },
             close: function(ko, viewModel) {
               viewModel.metadata.changed = Date.now();
