@@ -1,6 +1,5 @@
 .DS_Store
 build/
-packages/mosaico/
 node_modules/
 vendor/
 tests/backstop_data/cookies

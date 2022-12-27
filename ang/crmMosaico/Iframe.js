@@ -164,6 +164,10 @@
           return cmd;
         }
 
+
+        if (actions.sync) {
+          viewModel.sync = mkCmd("Sync", actions.sync);
+        }
         if (actions.save) {
           viewModel.save = mkCmd("Save", actions.save);
         }
