@@ -23,7 +23,7 @@
         return;
       }
 
-      var plugins = {/literal}{$mosaicoPlugins}{literal};
+      var plugins;
       // A basic plugin that expose the "viewModel" object as a global variable.
       // plugins = [function(vm) {window.viewModel = vm;}];
       var config = {/literal}{$mosaicoConfig}{literal};

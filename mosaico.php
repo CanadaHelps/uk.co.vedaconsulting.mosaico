@@ -13,6 +13,15 @@ function mosaico_civicrm_config(&$config) {
 }
 
 /**
+ * Implements hook_civicrm_xmlMenu().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
+ */
+function mosaico_civicrm_xmlMenu(&$files) {
+  _mosaico_civix_civicrm_xmlMenu($files);
+}
+
+/**
  * Implements hook_civicrm_install().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_install
@@ -72,14 +81,44 @@ function mosaico_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
   return _mosaico_civix_civicrm_upgrade($op, $queue);
 }
 
-function mosaico_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
-  $changeSet = \Civi\Angular\ChangeSet::create('mosaico_subject_list')
-    ->alterHtml('~/crmMailing/BlockMailing.html', function (phpQueryObject $doc) {
-      $field = $doc->find('[name=subject]')->parent('[crm-ui-field]');
-      $field->html('<crm-mosaico-subject-list crm-mailing="mailing"/>');
-      $field->after('<div crm-ui-field="{name: \'subform.dist\', title: ts(\'Distribution\')}" ng-if="mailing.template_options.variants"><crm-mosaico-distribution crm-mailing="mailing" /></div>');
-    });
-  $angular->add($changeSet);
+/**
+ * Implements hook_civicrm_managed().
+ *
+ * Generate a list of entities to create/deactivate/delete when this module
+ * is installed, disabled, uninstalled.
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_managed
+ */
+function mosaico_civicrm_managed(&$entities) {
+  _mosaico_civix_civicrm_managed($entities);
+}
+
+/**
+ * Implements hook_civicrm_angularModules().
+ *
+ * Generate a list of Angular modules.
+ *
+ * Note: This hook only runs in CiviCRM 4.5+. It may
+ * use features only available in v4.6+.
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
+ */
+function mosaico_civicrm_angularModules(&$angularModules) {
+  $canRead = Civi::service('civi_api_kernel')->runAuthorize(
+    'MosaicoTemplate', 'get', ['version' => 3, 'check_permissions' => 1]);
+  if (!$canRead) {
+    return;
+  }
+  _mosaico_civix_civicrm_angularModules($angularModules);
+}
+
+/**
+ * Implements hook_civicrm_alterSettingsFolders().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
+ */
+function mosaico_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
+  _mosaico_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
 function mosaico_civicrm_navigationMenu(&$params) {
@@ -90,7 +129,7 @@ function mosaico_civicrm_navigationMenu(&$params) {
     'child' => [],
     'operator' => 'AND',
     'separator' => 0,
-    'url' => CRM_Utils_System::url('civicrm/mosaico-template-list'),
+    'url' => CRM_Utils_System::url('civicrm/a/', NULL, TRUE, '/mosaico-template'),
   ]);
 
   _mosaico_civix_insert_navigation_menu($params, 'Mailings', [
@@ -110,7 +149,7 @@ function mosaico_civicrm_navigationMenu(&$params) {
     'child' => [],
     'operator' => 'AND',
     'separator' => 0,
-    'url' => CRM_Utils_System::url('civicrm/admin/setting/mosaico', 'reset=1', TRUE),
+    'url' => CRM_Utils_System::url('civicrm/admin/mosaico', 'reset=1', TRUE),
   ]);
 
   _mosaico_civix_navigationMenu($params);
@@ -152,7 +191,7 @@ function mosaico_civicrm_check(&$messages) {
     $messages[] = new CRM_Utils_Check_Message(
       'mosaico_graphics',
       E::ts('Mosaico requires a graphics driver such as PHP-ImageMagick or PHP-GD. For more information, see <a href="%1">Mosaico Settings</a>.', [
-        1 => \CRM_Utils_System::url('civicrm/admin/setting/mosaico', 'reset=1'),
+        1 => \CRM_Utils_System::url('civicrm/admin/mosaico', 'reset=1'),
       ])
       . "<p><em>" . E::ts("Error: %1", [1 => $e->getMessage()]) . "</em></p>",
       E::ts('Graphics driver not available'),
@@ -285,7 +324,7 @@ function _mosaico_civicrm_alterMailContent(&$content) {
   // Civi's delivery system and upstream Mosaico templates.
   $tokenAliases = [
     // '[profile_link]' => 'FIXME',
-    '[show_link]' => '{mailing.viewUrl}&cid={contact.contact_id}&{contact.checksum}',
+    '[show_link]' => '{mailing.viewUrl}',
     '[subject]' => '{mailing.subject}',
     '[unsubscribe_link]' => '{action.unsubscribeUrl}',
   ];
@@ -309,9 +348,12 @@ function mosaico_civicrm_mailingTemplateTypes(&$types) {
     }
   }
 
-  $editorUrl = empty($messages) ?
-    CRM_Mosaico_Utils::getLayoutPath() :
-    '~/crmMosaico/requirements.html';
+  // v4.6 compat
+  require_once 'CRM/Mosaico/Utils.php';
+
+  $editorUrl = empty($messages)
+    ? CRM_Mosaico_Utils::getLayoutPath()
+    : '~/crmMosaico/requirements.html';
 
   $types[] = [
     'name' => 'mosaico',
@@ -324,7 +366,6 @@ function mosaico_civicrm_mailingTemplateTypes(&$types) {
  * Implements hook_civicrm_entityTypes().
  */
 function mosaico_civicrm_entityTypes(&$entityTypes) {
-  // _mosaico_civix_civicrm_entityTypes($entityTypes);
   $entityTypes[] = [
     'name' => 'MosaicoTemplate',
     'class' => 'CRM_Mosaico_DAO_MosaicoTemplate',
@@ -338,8 +379,8 @@ function mosaico_civicrm_entityTypes(&$entityTypes) {
 function mosaico_civicrm_pre($op, $objectName, $id, &$params) {
   if ($objectName === 'Mailing' && $op === 'create') {
     if (isset($params['template_type']) && $params['template_type'] === 'mosaico') {
-      $params['header_id'] = 'null';
-      $params['footer_id'] = 'null';
+      $params['header_id'] = NULL;
+      $params['footer_id'] = NULL;
     }
   }
 }
@@ -354,51 +395,13 @@ function mosaico_civicrm_container(\Symfony\Component\DependencyInjection\Contai
 }
 
 /**
- * Implements hook_civicrm_searchTasks().
+ * Implements hook_civicrm_searchTasks();
  */
 function mosaico_civicrm_searchTasks($objectName, &$tasks) {
   if ($objectName == 'contact') {
-    if (CRM_Core_Permission::access('CiviMail')) {
-      $tasks[] = [
-          'title' => E::ts('Email - schedule/send via CiviMail (traditional)'),
-          'class' => 'CRM_Mosaico_Form_Task_AdhocMailingTraditional',
-      ];
-    }
-  }
-}
-
-/**
- * Listen to prepare event and a mailing wrapper for the
- * Mailing.submit and Mailing.send_test api actions.
- *
- * @param \Civi\API\Event\PrepareEvent $event
- */
-function mosaico_wrapMailingApi($event) {
-  $a = $event->getApiRequest();
-  switch ($a['entity'] . '.' . $a['action']) {
-    case 'Mailing.submit':
-      if (is_numeric($a['params']['id'])) {
-        $abMux = \Civi::service('mosaico_ab_demux');
-        $event->wrapApi([$abMux, 'onSubmitMailing']);
-      }
-      break;
-
-    case 'Mailing.send_test':
-      if (is_numeric($a['params']['mailing_id'])) {
-        $abMux = \Civi::service('mosaico_ab_demux');
-        $event->wrapApi([$abMux, 'onSendTestMailing']);
-      }
-      break;
-  }
-}
-
-/**
-  * Implements hook_civicrm_apiWrappers().
-  */
-function mosaico_civicrm_apiWrappers(&$wrappers, $apiRequest) {
-  if ($apiRequest['entity'] == 'MosaicoTemplate' && $apiRequest['action'] == 'get') {
-    if ($apiRequest['version'] == '4') {
-      $wrappers[] = new CRM_Mosaico_API4Wrappers_MosaicoTemplate();
-    }
+    $tasks[] = [
+      'title' => E::ts('Email - schedule/send via CiviMail (traditional)'),
+      'class' => 'CRM_Mosaico_Form_Task_AdhocMailingTraditional',
+    ];
   }
 }

@@ -17,14 +17,14 @@ class api_v3_Job_MosaicoMigrateTest extends \PHPUnit\Framework\TestCase implemen
    */
   public function setUpHeadless() {
     return \Civi\Test::headless()
-      ->install(['org.civicrm.search_kit', 'org.civicrm.flexmailer', 'uk.co.vedaconsulting.mosaico'])
+      ->installMe(__DIR__)
       ->apply();
   }
 
   /**
    * The setup() method is executed before the test is executed (optional).
    */
-  public function setUp(): void {
+  public function setUp() {
     parent::setUp();
   }
 
@@ -32,7 +32,7 @@ class api_v3_Job_MosaicoMigrateTest extends \PHPUnit\Framework\TestCase implemen
    * The tearDown() method is executed after the test was executed (optional)
    * This can be used for cleanup.
    */
-  public function tearDown(): void {
+  public function tearDown() {
     parent::tearDown();
   }
 
@@ -41,7 +41,7 @@ class api_v3_Job_MosaicoMigrateTest extends \PHPUnit\Framework\TestCase implemen
    *
    * Note how the function name begins with the word "test".
    */
-  public function testMigrate(): void  {
+  public function testMigrate() {
     $this->createExampleLegacyTemplate();
     $this->assertEquals(1, CRM_Core_DAO::singleValueQuery('SELECT count(*) FROM civicrm_mosaico_msg_template'));
     $this->assertEquals(0, CRM_Core_DAO::singleValueQuery('SELECT count(*) FROM civicrm_mosaico_template'));
@@ -64,7 +64,7 @@ class api_v3_Job_MosaicoMigrateTest extends \PHPUnit\Framework\TestCase implemen
     $this->assertEquals(1, CRM_Core_DAO::singleValueQuery('SELECT count(*) FROM civicrm_mosaico_template'));
   }
 
-  protected function createExampleLegacyTemplate(): void {
+  protected function createExampleLegacyTemplate() {
     $msgTpl = civicrm_api3('MessageTemplate', 'create', [
       'msg_title' => 'The Title',
       'msg_subject' => 'The Subject',

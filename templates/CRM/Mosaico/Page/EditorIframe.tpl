@@ -22,19 +22,14 @@
         return;
       }
 
-      var plugins = {/literal}{$mosaicoPlugins}{literal};
+      var plugins = [];
       var config = {/literal}{$mosaicoConfig}{literal};
 
-      window.addEventListener('beforeunload', function(e) {
-        if(window.parent.document.getElementById('crm-mosaico').style.display !== "none") {
-          e.preventDefault();
-          e.returnValue = "{/literal}{ts}Exit email composer without saving?{/ts}{literal}";
-        }
-      });
+      window.onbeforeunload = function(e) {
+        e.preventDefault();
+        e.returnValue = "{/literal}{ts}Exit email composer without saving?{/ts}{literal}";
+      };
 
-      if (config.fileuploadConfig.acceptFileTypes) {
-        config.fileuploadConfig.acceptFileTypes = /(\.|\/)(|gif|p?jpe?g|png|x-png)$/i;
-      }
       if (window.top.crmMosaicoIframe) {
         window.top.crmMosaicoIframe(window, Mosaico, config, plugins);
       }

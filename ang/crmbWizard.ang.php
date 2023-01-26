@@ -11,10 +11,12 @@ return [
     2 => 'ang/crmbWizard/*/*.js',
   ],
   // Hmm, shouldn't high-level components have separate CSS files?
-  'css' => ['css/mosaico-bootstrap.css'],
-  'bundles' => ['bootstrap3'],
+  'css' => CRM_Mosaico_Utils::isBootstrap() ? ['css/mosaico-bootstrap.css'] : [],
   'partials' =>
   [
     0 => 'ang/crmbWizard',
+  ],
+  'settings' =>
+  [
   ],
 ];

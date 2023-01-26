@@ -12,11 +12,11 @@ require_once __DIR__ . '/TestCase.php';
  */
 class CRM_Mosaico_MosaicoTemplateTest extends CRM_Mosaico_TestCase implements EndToEndInterface {
 
-  public static function setUpBeforeClass(): void {
+  public static function setUpBeforeClass() {
     // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
 
     // Example: Install this extension. Don't care about anything else.
-    \Civi\Test::e2e()->install(['org.civicrm.search_kit'])->installMe(__DIR__)->apply();
+    \Civi\Test::e2e()->installMe(__DIR__)->apply();
 
     // Example: Uninstall all extensions except this one.
     // \Civi\Test::e2e()->uninstall('*')->installMe(__DIR__)->apply();
@@ -25,16 +25,16 @@ class CRM_Mosaico_MosaicoTemplateTest extends CRM_Mosaico_TestCase implements En
     // \Civi\Test::e2e()->uninstall('*')->install('org.civicrm.*')->apply();
   }
 
-  public function setUp(): void {
+  public function setUp() {
     parent::setUp();
   }
 
-  public function tearDown(): void {
+  public function tearDown() {
     CRM_Core_DAO::executeQuery('DELETE FROM civicrm_mosaico_template WHERE title LIKE "MosaicoTemplateTest%"');
     parent::tearDown();
   }
 
-  public function testCreateGetDelete(): void {
+  public function testCreateGetDelete() {
     $r = rand();
     $createResult = $this->callAPISuccess('MosaicoTemplate', 'create', [
       'title' => 'MosaicoTemplateTest ' . $r,
@@ -52,7 +52,7 @@ class CRM_Mosaico_MosaicoTemplateTest extends CRM_Mosaico_TestCase implements En
     $this->assertTrue(is_array($getResult['values'][$createResult['id']]));
     foreach ($getResult['values'] as $value) {
       $this->assertEquals('<p>hello</p>', $value['html']);
-      $this->assertEquals(['foo' => 'bar', 'template' => NULL], json_decode($value['metadata'], 1));
+      $this->assertEquals(['foo' => 'bar'], json_decode($value['metadata'], 1));
       $this->assertEquals(['abc' => 'def'], json_decode($value['content'], 1));
     }
 
@@ -61,7 +61,7 @@ class CRM_Mosaico_MosaicoTemplateTest extends CRM_Mosaico_TestCase implements En
     ]);
   }
 
-  public function testClone(): void {
+  public function testClone() {
     $createResult = $this->callAPISuccess('MosaicoTemplate', 'create', [
       'title' => 'MosaicoTemplateTest foo',
       'base' => 'versafix-1',
@@ -80,8 +80,7 @@ class CRM_Mosaico_MosaicoTemplateTest extends CRM_Mosaico_TestCase implements En
     $this->assertEquals('MosaicoTemplateTest bar', $clone['title']);
     $this->assertEquals('versafix-1', $clone['base']);
     $this->assertEquals('<p>hello</p>', $clone['html']);
-    $template = _civicrm_api3_mosaico_template_getDomainFrom(json_decode($createResult['values'][$createResult['id']]['metadata'], TRUE)['template']) ? trim(parse_url(CRM_Utils_System::baseURL())['path'], '/') : NULL;
-    $this->assertEquals(json_encode(['foo' => 'bar', 'template' => $template]), $clone['metadata']);
+    $this->assertEquals(json_encode(['foo' => 'bar']), $clone['metadata']);
     $this->assertEquals(json_encode(['abc' => 'def']), $clone['content']);
   }
 

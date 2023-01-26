@@ -25,7 +25,7 @@ class CRM_Mosaico_BAO_MosaicoTemplate extends CRM_Mosaico_DAO_MosaicoTemplate {
   /**
    * Helps updating the URLs in templates so they can be reused
    * after restoring a dump database in a new server.
-   *
+   * 
    * @param string $fromUrl URL of the server where the
    *   templates were created
    * @param string $toUrl URL of the current server
@@ -49,8 +49,8 @@ class CRM_Mosaico_BAO_MosaicoTemplate extends CRM_Mosaico_DAO_MosaicoTemplate {
   /**
    * @return mixed
    */
-  public static function findBaseTemplates($ignoreCache = FALSE, $dispatchHooks = TRUE) {
-    if (!isset(Civi::$statics[__CLASS__]['bases']) || $ignoreCache) {
+  public static function findBaseTemplates() {
+    if (!isset(Civi::$statics[__CLASS__]['bases'])) {
       $templatesDir = CRM_Core_Resources::singleton()->getPath('uk.co.vedaconsulting.mosaico');
       if (!$templatesDir) {
         return FALSE;
@@ -64,16 +64,13 @@ class CRM_Mosaico_BAO_MosaicoTemplate extends CRM_Mosaico_DAO_MosaicoTemplate {
 
       $templatesLocation[] = ['dir' => $templatesDir, 'url' => $templatesUrl];
 
-      $customTemplatesDir = \Civi::paths()->getPath(\Civi::settings()->get('mosaico_custom_templates_dir'));
-      $customTemplatesUrl = \Civi::paths()->getUrl(\Civi::settings()->get('mosaico_custom_templates_url'),'absolute');
+      $customTemplatesDir = \Civi::paths()->getPath(CRM_Core_BAO_Setting::getItem('Mosaico Preferences', 'mosaico_custom_templates_dir'));
+      $customTemplatesUrl = \Civi::paths()->getUrl(CRM_Core_BAO_Setting::getItem('Mosaico Preferences', 'mosaico_custom_templates_url'));
       if (!is_null($customTemplatesDir) && !is_null($customTemplatesUrl)) {
         if (is_dir($customTemplatesDir)) {
           $templatesLocation[] = ['dir' => $customTemplatesDir, 'url' => $customTemplatesUrl];
         }
       }
-
-      // get list of base templates that needs be to hidden from the UI
-      $templatesToHide = \Civi::settings()->get('mosaico_hide_base_templates');
 
       $records = [];
 
@@ -83,22 +80,18 @@ class CRM_Mosaico_BAO_MosaicoTemplate extends CRM_Mosaico_DAO_MosaicoTemplate {
           $templateHTML = "{$templateLocation['url']}/{$template}/template-{$template}.html";
           $templateThumbnail = "{$templateLocation['url']}/{$template}/edres/_full.png";
 
-          // let's add hidden flag to templates that needs to be excluded from the display
-          $isHidden = !empty($templatesToHide) && in_array($template, $templatesToHide);
-
           $records[$template] = [
             'name' => $template,
             'title' => $template,
             'thumbnail' => $templateThumbnail,
             'path' => $templateHTML,
-            'is_hidden' => $isHidden,
           ];
         }
       }
       // Sort the base templates into alphabetical order
       ksort($records, SORT_NATURAL | SORT_FLAG_CASE);
 
-      if (class_exists('\Civi\Core\Event\GenericHookEvent') && $dispatchHooks) {
+      if (class_exists('\Civi\Core\Event\GenericHookEvent')) {
         \Civi::dispatcher()->dispatch('hook_civicrm_mosaicoBaseTemplates',
           \Civi\Core\Event\GenericHookEvent::create([
             'templates' => &$records,

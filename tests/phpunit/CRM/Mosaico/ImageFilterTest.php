@@ -46,7 +46,7 @@ class CRM_Mosaico_ImageFilterTest extends CRM_Mosaico_TestCase implements EndToE
    * @param string $expectHtml
    * @dataProvider filterExamples
    */
-  public function testFilter($config, $inputHtml, $expectHtml): void {
+  public function testFilter($config, $inputHtml, $expectHtml) {
     $filter = new CRM_Mosaico_ImageFilter($config);
     $e = \Civi\Core\Event\GenericHookEvent::create([
       'content' => [
