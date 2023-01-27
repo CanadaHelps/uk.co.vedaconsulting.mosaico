@@ -74,9 +74,8 @@ class CRM_Mosaico_Graphics_Intervention extends CRM_Mosaico_Graphics_Interface {
 
     // $img->response returns a \Symfony\Component\HttpFoundation\Response object which will call __toString unless we pass in the send() method in Drupal8.
     $response = $img->response('png');
-    header("Content-type: image/png");
     if (is_object($response)) {
-      echo $response->sendContent();
+      echo $response->send();
     }
     else {
       echo $response;

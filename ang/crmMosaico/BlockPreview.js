@@ -9,22 +9,11 @@
         scope.$watch(attr.crmMailing, function(newValue) {
           scope.mailing = newValue;
         });
+        scope.groupNames = CRM.crmMailing.testGroupNames || CRM.crmMailing.groupNames;
         scope.ts = CRM.ts(null);
         scope.hs = crmUiHelp({file: 'CRM/Mailing/MailingUI'});
         scope.testContact = {email: CRM.crmMailing.defaultTestEmail};
         scope.testGroup = {gid: null};
-        scope.validateMultipleEmail = function(email) {
-          email = email.split(',');
-
-          // a regex pattern for single email
-          var emailRegex = /\S+@\S+\.\S+/;
-
-          var validityArr = email.map(function(str){
-            return emailRegex.test(str.trim());
-          });
-
-          return ($.inArray(false, validityArr) == -1);
-        };
 
         scope.doPreview = function(mode) {
           scope.$eval(attr.onPreview, {

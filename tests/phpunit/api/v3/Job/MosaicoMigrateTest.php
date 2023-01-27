@@ -17,7 +17,7 @@ class api_v3_Job_MosaicoMigrateTest extends \PHPUnit\Framework\TestCase implemen
    */
   public function setUpHeadless() {
     return \Civi\Test::headless()
-      ->install(['org.civicrm.search_kit', 'org.civicrm.flexmailer', 'uk.co.vedaconsulting.mosaico'])
+      ->installMe(__DIR__)
       ->apply();
   }
 
