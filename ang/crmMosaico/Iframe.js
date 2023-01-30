@@ -148,7 +148,6 @@
       function mosaicoPlugin(ko, viewModel) {
         // Clicking the default link isn't very useful in IFRAME context.
         viewModel.logoUrl = null;
-
         function mkCmd(name, callback) {
           var cmd = {
             name: name, // l10n happens in the template
@@ -164,6 +163,9 @@
           return cmd;
         }
 
+        if (actions.sync) {
+          viewModel.sync = mkCmd("Sync", actions.sync);
+        }
         if (actions.save) {
           viewModel.save = mkCmd("Save", actions.save);
         }
