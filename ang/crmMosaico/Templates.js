@@ -18,6 +18,9 @@
     }
     function filterTemplate(tpl) {
       var base = cache.basesByName[tpl.base];
+
+      if (base == undefined)
+        base = {title: tpl.base};
       return {
         id: tpl.id,
         baseDetails: base,
